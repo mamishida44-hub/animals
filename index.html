@@ -1,59 +1,41 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
 <title>Animal Sound Game</title>
 <style>
-body 
- 
-<!-- スタート画面 -->
-<div id="start">
-  <h2>モード選択</h2>
- 
-  <h2>時間</h2>
-  <button onclick="start(null)">制限なし</button>
-  <button onclick="start(60)">1分</button>
-  <button onclick="start(120)">2分</button>
-</div>
-
-{
+body {
     text-align: center;
     font-family: Arial, sans-serif;
 }
-h1 {
-    margin-top: 20px;
-}
+
+h1 { margin-top: 20px; }
 
 button {
     padding: 10px 20px;
     font-size: 18px;
-    margin: 20px;
+    margin: 10px;
     cursor: pointer;
+}
+
+#gameArea { display: none; }
+
+.info {
+    font-size: 20px;
+    margin: 10px;
 }
 
 .cards {
     display: flex;
     justify-content: center;
     gap: 20px;
-    flex-wrap: wrap;
+    margin-top: 20px;
 }
 
-.card {
-    border: 3px solid transparent;
-    cursor: pointer;
-}
-
-.card img {
+.cards img {
     width: 150px;
     height: 150px;
-}
-
-.correct {
-    border-color: green;
-}
-
-.wrong {
-    border-color: red;
+    cursor: pointer;
 }
 
 #result {
@@ -67,58 +49,111 @@ button {
 
 <h1>🔊 なんのどうぶつ？</h1>
 
-<button onclick="playSound()">▶ 音をきく</button>
-
-<div class="cards">
-    <div class="card" onclick="checkAnswer('dog', this)">
-        <img src="images/dog.png">
-    </div>
-    <div class="card" onclick="checkAnswer('cat', this)">
-        <img src="images/cat.png">
-    </div>
-    <div class="card" onclick="checkAnswer('cow', this)">
-        <img src="images/cow.png">
-    </div>
+<div id="startScreen">
+    <p>時間をえらんでください</p>
+    <button onclick="startGame(60)">1分</button>
+    <button onclick="startGame(120)">2分</button>
+    <button onclick="startGame(0)">無制限</button>
 </div>
 
-<div id="result"></div>
+<div id="gameArea">
+    <div class="info">
+        ⏰ タイマー: <span id="timer">0</span>
+        ⭐ スコア: <span id="score">0</span>
+        ❌ ストライク: <span id="strike">0</span>
+    </div>
+
+    <button onclick="playSound()">▶ 音をきく</button>
+
+    <div class="cards" id="cards"></div>
+
+    <div id="result"></div>
+</div>
 
 <script>
-const animals = ["dog", "cat", "cow"];
+const animals = ["dog", "panda", "bore", "horse", "raccoon", "gorilla","koara", "zebra"];
+
 let currentAnswer = "";
+let score = 0;
+let strike = 0;
+let timeLeft = 0;
+let timerInterval = null;
+
+function startGame(seconds) {
+    document.getElementById("startScreen").style.display = "none";
+    document.getElementById("gameArea").style.display = "block";
+
+    score = 0;
+    strike = 0;
+    updateDisplay();
+
+    if (seconds > 0) {
+        timeLeft = seconds;
+        document.getElementById("timer").textContent = timeLeft;
+        timerInterval = setInterval(() => {
+            timeLeft--;
+            document.getElementById("timer").textContent = timeLeft;
+            if (timeLeft <= 0) {
+                endGame();
+            }
+        }, 1000);
+    } else {
+        document.getElementById("timer").textContent = "∞";
+    }
+
+    nextQuestion();
+}
+
+function nextQuestion() {
+    document.getElementById("result").textContent = "";
+    generateCards();
+    playSound();
+}
+
+function generateCards() {
+    const cardsDiv = document.getElementById("cards");
+    cardsDiv.innerHTML = "";
+
+    let shuffled = [...animals].sort(() => 0.5 - Math.random());
+    let choices = shuffled.slice(0, 3);
+
+    currentAnswer = choices[Math.floor(Math.random() * 3)];
+
+    choices.forEach(animal => {
+        const img = document.createElement("img");
+        img.src = "images/" + animal + ".png";
+        img.onclick = () => checkAnswer(animal);
+        cardsDiv.appendChild(img);
+    });
+}
 
 function playSound() {
-    // ランダムに正解を決める
-    currentAnswer = animals[Math.floor(Math.random() * animals.length)];
-
     const audio = new Audio("sounds/" + currentAnswer + ".m4a");
     audio.play();
-
-    document.getElementById("result").textContent = "";
-    clearBorders();
 }
 
-function checkAnswer(selected, element) {
-    if (!currentAnswer) {
-        alert("先に音をきいてね！");
-        return;
-    }
-
+function checkAnswer(selected) {
     if (selected === currentAnswer) {
-        element.classList.add("correct");
+        score++;
         document.getElementById("result").textContent = "⭕ せいかい！";
+        updateDisplay();
+        setTimeout(nextQuestion, 800);
     } else {
-        element.classList.add("wrong");
+        strike++;
         document.getElementById("result").textContent = "❌ ちがうよ";
+        updateDisplay();
     }
 }
 
-function clearBorders() {
-    const cards = document.querySelectorAll(".card");
-    cards.forEach(card => {
-        card.classList.remove("correct");
-        card.classList.remove("wrong");
-    });
+function updateDisplay() {
+    document.getElementById("score").textContent = score;
+    document.getElementById("strike").textContent = strike;
+}
+
+function endGame() {
+    clearInterval(timerInterval);
+    alert("時間切れ！スコア: " + score + " / ストライク: " + strike);
+    location.reload();
 }
 </script>
 
