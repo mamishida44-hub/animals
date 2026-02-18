@@ -1,0 +1,115 @@
+ <!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>Animal Sound Game</title>
+<style>
+body {
+    text-align: center;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    margin-top: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 18px;
+    margin: 20px;
+    cursor: pointer;
+}
+
+.cards {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.card {
+    border: 3px solid transparent;
+    cursor: pointer;
+}
+
+.card img {
+    width: 150px;
+    height: 150px;
+}
+
+.correct {
+    border-color: green;
+}
+
+.wrong {
+    border-color: red;
+}
+
+#result {
+    font-size: 24px;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🔊 なんのどうぶつ？</h1>
+
+<button onclick="playSound()">▶ 音をきく</button>
+
+<div class="cards">
+    <div class="card" onclick="checkAnswer('dog', this)">
+        <img src="images/dog.png">
+    </div>
+    <div class="card" onclick="checkAnswer('cat', this)">
+        <img src="images/cat.png">
+    </div>
+    <div class="card" onclick="checkAnswer('cow', this)">
+        <img src="images/cow.png">
+    </div>
+</div>
+
+<div id="result"></div>
+
+<script>
+const animals = ["dog", "cat", "cow"];
+let currentAnswer = "";
+
+function playSound() {
+    // ランダムに正解を決める
+    currentAnswer = animals[Math.floor(Math.random() * animals.length)];
+
+    const audio = new Audio("sounds/" + currentAnswer + ".m4a");
+    audio.play();
+
+    document.getElementById("result").textContent = "";
+    clearBorders();
+}
+
+function checkAnswer(selected, element) {
+    if (!currentAnswer) {
+        alert("先に音をきいてね！");
+        return;
+    }
+
+    if (selected === currentAnswer) {
+        element.classList.add("correct");
+        document.getElementById("result").textContent = "⭕ せいかい！";
+    } else {
+        element.classList.add("wrong");
+        document.getElementById("result").textContent = "❌ ちがうよ";
+    }
+}
+
+function clearBorders() {
+    const cards = document.querySelectorAll(".card");
+    cards.forEach(card => {
+        card.classList.remove("correct");
+        card.classList.remove("wrong");
+    });
+}
+</script>
+
+</body>
+</html>
